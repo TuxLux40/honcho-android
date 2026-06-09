@@ -1,0 +1,81 @@
+name: Build APK
+
+# Tag push  →  GitHub Release with APK attached (download on phone, tap install)
+# Manual    →  APK uploaded as workflow artifact (Actions tab → run → Artifacts)
+#
+# To ship a build: git tag v0.2.0 && git push origin v0.2.0
+# For a Proxmox LXC self-hosted runner: change runs-on to "self-hosted"
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to create GitHub Releases
+
+jobs:
+  build:
+    runs-on: ubuntu-latest   # free & unlimited on public repos; swap to "self-hosted" if desired
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle          # caches ~/.gradle between runs — speeds up subsequent builds
+
+      - uses: android-actions/setup-android@v3   # accepts SDK licences, installs required packages
+
+      - run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Resolve version
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          if [ "$TAG" = "$GITHUB_REF" ]; then
+            # Manual dispatch — no tag
+            echo "is_tag=false" >> $GITHUB_OUTPUT
+            echo "tag=dev-$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          else
+            echo "is_tag=true" >> $GITHUB_OUTPUT
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+          fi
+
+      # ── Manual dispatch: upload artifact so you can grab the APK from the Actions tab ──
+      - name: Upload APK artifact
+        if: steps.version.outputs.is_tag == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: honcho-${{ steps.version.outputs.tag }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+
+      # ── Tag push: create a real GitHub Release with the APK attached ──
+      - name: Create GitHub Release
+        if: steps.version.outputs.is_tag == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          PRERELEASE_FLAG=""
+          echo "$TAG" | grep -qE '\-(alpha|beta)' && PRERELEASE_FLAG="--prerelease"
+
+          gh release create "$TAG" \
+            --title "Honcho $TAG" \
+            --notes "## Install on Android
+
+          1. Download \`honcho-${TAG}.apk\` below
+          2. Open the file on your phone — Android will prompt to allow install from this source
+          3. Tap **Install**
+
+          > Debug build. No release signing required for personal sideloading." \
+            $PRERELEASE_FLAG \
+            "$APK#honcho-${TAG}.apk"

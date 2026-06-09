@@ -1,0 +1,1 @@
+Initial release: manage workspaces, peers, sessions, messages, conclusions, webhooks, and API keys via the Honcho v3 API.
