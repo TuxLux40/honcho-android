@@ -68,7 +68,7 @@ fun PeerDetailScreen(
 
 @Composable
 private fun InfoTab(state: PeerDetailUiState, vm: PeerDetailViewModel) {
-    var editName by remember { mutableStateOf(state.peer?.name ?: "") }
+    var editName by remember(state.peer) { mutableStateOf(state.peer?.name ?: "") }
 
     Column(Modifier.padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         state.peer?.let { peer ->

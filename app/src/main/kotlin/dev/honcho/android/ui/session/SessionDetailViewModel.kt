@@ -95,7 +95,7 @@ class SessionDetailViewModel(val workspaceId: String, val sessionId: String) : V
         viewModelScope.launch {
             when (val r = repository.getSessionPeers(workspaceId, sessionId)) {
                 is Result.Success -> _uiState.update { it.copy(sessionPeers = r.data) }
-                is Result.Error -> {}
+                is Result.Error -> _events.emit("Error loading peers: ${r.message}")
                 else -> {}
             }
         }

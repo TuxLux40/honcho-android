@@ -51,7 +51,10 @@ class SetupViewModel : ViewModel() {
             _uiState.update { it.copy(isLoading = true, error = null) }
             settingsRepository.saveSettings(state.baseUrl, state.token)
             when (val result = repository.listWorkspaces()) {
-                is Result.Success -> onSuccess()
+                is Result.Success -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    onSuccess()
+                }
                 is Result.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = "Validation failed: ${result.message}") }
                 }

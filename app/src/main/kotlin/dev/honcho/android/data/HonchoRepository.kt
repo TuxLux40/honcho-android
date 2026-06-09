@@ -18,7 +18,7 @@ class HonchoRepository(private val settingsRepository: SettingsRepository) {
     private suspend fun <T> call(block: suspend HonchoService.() -> T): Result<T> = try {
         Result.Success(service().block())
     } catch (e: Exception) {
-        Result.Error(e.message)
+        Result.Error(e.message ?: "Unknown error")
     }
 
     // ===== WORKSPACES =====

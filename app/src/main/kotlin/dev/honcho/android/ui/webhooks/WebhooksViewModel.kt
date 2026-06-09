@@ -55,7 +55,10 @@ class WebhooksViewModel(val workspaceId: String) : ViewModel() {
                 is Result.Success -> _uiState.update {
                     it.copy(isLoading = false, webhooks = it.webhooks + r.data.items, hasMore = r.data.hasMore, currentPage = nextPage)
                 }
-                is Result.Error -> _uiState.update { it.copy(isLoading = false) }
+                is Result.Error -> {
+                    _uiState.update { it.copy(isLoading = false) }
+                    _events.emit("Error: ${r.message}")
+                }
                 else -> {}
             }
         }
