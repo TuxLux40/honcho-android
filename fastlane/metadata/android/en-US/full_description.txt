@@ -1,0 +1,15 @@
+Honcho is an unofficial Android client for the Honcho v3 REST API — a memory provider for AI agents.
+
+Manage all your Honcho resources from your phone:
+
+• Workspaces — create, list, delete, search messages, monitor queue status, trigger dream tasks
+• Peers — create, update, view peer cards and context, run semantic representation queries, chat with peers
+• Sessions — create, list, delete, clone, manage peers per session, view context and summaries
+• Messages — browse chat history, add messages as user or assistant, search semantically
+• Conclusions — create, list, delete, and run semantic queries over synthesized insights
+• Webhooks — create, list, delete, and test webhook endpoints
+• API Keys — create workspace, peer, or session-scoped API keys
+
+Built for developers and vibe coders. No tracking, no analytics, no Google services.
+
+This app is open source (Apache 2.0) and fully F-Droid compatible.
